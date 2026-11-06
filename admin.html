@@ -1,0 +1,28 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Admin – Pflegedienst Saaletal</title><link rel="icon" href="logo.svg"><link rel="stylesheet" href="style.css"></head><body>
+<header><div class="wrap"><a class="logo" href="index.html"><img src="logo.svg" alt="" width="48" height="48"><span>Pflegedienst Saaletal<small>Admin-Bereich</small></span></a><nav><a href="index.html">Zur Website</a></nav></div></header>
+<main class="wrap ad" style="padding-top:48px;padding-bottom:64px">
+<form id="login" class="f" style="max-width:420px"><h1>Anmeldung</h1><label>Passwort<input id="pw" type="password" autocomplete="current-password" required></label><button class="btn">Anmelden</button><p id="le" role="alert"></p></form>
+<div id="panel" hidden><p id="warn" class="note" hidden>Firebase ist noch nicht eingerichtet (siehe app.js). Änderungen können nicht gespeichert werden.</p>
+<h2>Dienstleistungen</h2>
+<form class="f ef" data-c="services" style="max-width:640px"><input type="hidden" name="id"><label>Titel*<input name="title" required></label><label>Beschreibung (optional)<textarea name="text" rows="3"></textarea></label><label>Reihenfolge<input name="order" type="number" value="1"></label><button class="btn">Speichern</button> <button type="reset" class="btn o">Neu</button></form>
+<ul id="l-services"></ul><button id="seed" class="btn o" hidden>Standard-Dienstleistungen anlegen</button>
+<h2 style="margin-top:56px">Termine</h2>
+<form class="f ef" data-c="events" style="max-width:640px"><input type="hidden" name="id"><label>Datum*<input name="date" type="date" required></label><label>Uhrzeit (optional)<input name="time" type="time"></label><label>Titel*<input name="title" required></label><button class="btn">Speichern</button> <button type="reset" class="btn o">Neu</button></form>
+<ul id="l-events"></ul></div></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+<script>
+const PW="1234",C={services:["title","text","order"],events:["date","time","title"]},L={};
+const ui=()=>{const ok=sessionStorage.adm==="1";$("#login").hidden=ok;$("#panel").hidden=!ok;if(ok){$("#warn").hidden=!!DB;Object.keys(C).forEach(render)}};
+$("#login").onsubmit=e=>{e.preventDefault();if($("#pw").value===PW){sessionStorage.adm="1";ui()}else $("#le").textContent="Falsches Passwort."};
+async function render(c){const l=await load(c),k=o=>c==="events"?o.date+(o.time||""):String(o.order||0).padStart(4,"0");l.sort((a,b)=>k(a).localeCompare(k(b)));L[c]=l;
+$("#l-"+c).innerHTML=l.map(o=>`<li><span>${esc(o.title)}${o.date?` – ${esc(o.date)} ${esc(o.time||"")}`:""}</span><button class="btn o s" data-e="${c}" data-id="${o.id}">Bearbeiten</button><button class="btn o s" data-x="${c}" data-id="${o.id}">Löschen</button></li>`).join("")||"<li>Noch keine Einträge.</li>";
+if(c==="services")$("#seed").hidden=!(DB&&!l.length)}
+document.addEventListener("click",async e=>{const b=e.target.closest("button[data-id]");if(!b)return;const c=b.dataset.e||b.dataset.x,o=L[c].find(x=>x.id===b.dataset.id);
+if(b.dataset.e){const f=document.querySelector(`.ef[data-c=${c}]`);f.elements.id.value=o.id;C[c].forEach(n=>f.elements[n].value=o[n]??"");f.scrollIntoView()}
+else if(confirm("Eintrag wirklich löschen?")){await del(c,o.id);render(c)}});
+document.querySelectorAll(".ef").forEach(f=>{f.onsubmit=async e=>{e.preventDefault();if(!DB)return alert("Firebase ist nicht eingerichtet.");const c=f.dataset.c,d=Object.fromEntries(new FormData(f));if(c==="services")d.order=+d.order;if(!d.id)delete d.id;await save(c,d);f.reset();render(c)};f.onreset=()=>setTimeout(()=>f.elements.id.value="")});
+$("#seed").onclick=async()=>{await Promise.all(DEF.map(o=>save("services",o)));render("services")};
+ui();
+</script></body></html>

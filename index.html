@@ -1,0 +1,80 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pflegedienst Saaletal – Ambulante Pflege in Bad Neustadt</title>
+<meta name="description" content="Familiengeführter ambulanter Pflegedienst: Pflege, Hauswirtschaft und Beratung bei Ihnen daheim. 24 Std. Notruf: 0151 65 48 90 18.">
+<link rel="icon" href="logo.svg"><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#willkommen">Zum Inhalt springen</a>
+<div class="sos"><div class="wrap">24 Std. Notruf: <a href="tel:+4915165489018">0151-65 48 90 18</a></div></div>
+<header><div class="wrap"><a class="logo" href="#top"><img src="logo.svg" alt="" width="48" height="48"><span>Pflegedienst Saaletal<small>Ambulante Pflege</small></span></a>
+<nav aria-label="Hauptmenü"><a href="#willkommen">Willkommen</a><a href="#leistungen">Leistungen</a><a href="#termine">Termine</a><a href="#team">Team</a><a href="#partner">Partner</a><a href="#kontakt">Kontakt</a></nav></div></header>
+<main id="top">
+<section id="willkommen" class="alt"><div class="wrap"><div class="hero"><div>
+<h1>Willkommen beim Pflegedienst Saaletal</h1>
+<p>Pflegebedürftig zu werden, heißt für viele Betroffene und Angehörige, oft über die Jahre liebgewonnene Strukturen im Alltag nicht mehr erhalten zu können. Das muss nicht sein! Wir als <strong>familiengeführter ambulanter Pflegedienst</strong> haben es uns zur Aufgabe gemacht, pflegebedürftigen Menschen genau dort Hilfe und Unterstützung zu geben, wo sie gebraucht wird – bei Ihnen daheim. Denn in den eigenen vier Wänden ein selbstbestimmtes Leben zu ermöglichen, das ist unser Ziel!</p>
+<p>Dies gelingt uns mit Menschlichkeit, Respekt und Aufmerksamkeit, um eine starke Vertrauensbasis zu schaffen. Unser Team besteht aus erfahrenen und geschulten Mitarbeitern der Kranken- und Altenpflege, mit speziellen Zusatzausbildungen. Wir kümmern uns rund um die Uhr um das Wohlbefinden unserer Patienten.</p>
+<p>Das Team des Pflegedienstes Saaletal wünscht Ihnen einen angenehmen Tag!</p>
+<a class="btn" href="#kontakt">Kontakt aufnehmen</a></div><div id="p0"></div></div>
+<div class="pics" id="pics"></div></div></section>
+<section id="leistungen"><div class="wrap"><h2>Unsere Leistungen</h2><div class="grid" id="svc"></div></div></section>
+<section id="termine" class="alt"><div class="wrap"><h2>Termine</h2><div class="two"><div class="cal">
+<div class="ch"><button class="btn o s" data-m="-1" aria-label="Vorheriger Monat">‹</button><strong id="cm" aria-live="polite"></strong><button class="btn o s" data-m="1" aria-label="Nächster Monat">›</button></div>
+<div class="cg" id="cg"></div></div><div><h3 id="ct"></h3><ul id="cl"></ul></div></div></div></section>
+<section id="team"><div class="wrap"><h2>Unser Team</h2><div class="team" id="tm"></div></div></section>
+<section id="partner" class="alt"><div class="wrap"><h2>Unsere Partner</h2><p>Wir sind Mitglied im Bundesverband privater Anbieter sozialer Dienste (bpa).</p><div class="grid big" id="pt"></div></div></section>
+<section id="kontakt"><div class="wrap"><h2>Treten Sie mit uns in Kontakt</h2><div class="two kbox"><div>
+<p>Wir freuen uns darauf, Sie kennenzulernen und gemeinsam mit Ihnen Wege zu finden, wie wir Ihnen helfen können.</p>
+<p><strong>Postanschrift</strong><br>Berliner Straße 17<br>97616 Bad Neustadt</p>
+<p><strong>Telefon</strong><br><strong>24 Std. Notruf: <a href="tel:+4915165489018">0151-65 48 90 18</a></strong><br>Mobil: <a href="tel:+4915165489018">0151-65 48 90 18</a><br>Festnetz: <a href="tel:+499771687746">09771-68 77 46 6</a><br>Fax: 09771-68 77 47 7</p>
+<p><strong>E-Mail</strong><br><a href="mailto:kontakt@familienpflege-pyritz.de">kontakt@familienpflege-pyritz.de</a></p></div>
+<div id="fmain"></div></div></div></section>
+</main>
+<footer><div class="wrap"><p>24 Std. Notruf: <a href="tel:+4915165489018"><strong>0151-65 48 90 18</strong></a></p><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><p>© Pflegedienst Saaletal</p></div></footer>
+<dialog id="dlg" aria-labelledby="dt"><h2 id="dt">Nachricht senden</h2><div id="fdlg"></div><button class="btn o" data-close>Schließen</button></dialog>
+<dialog id="gal" aria-label="Bildergalerie"><img id="gi" alt=""><div class="gb"><button class="btn" data-n="-1">Zurück</button><span id="gc" aria-live="polite"></span><button class="btn" data-n="1">Weiter</button><button class="btn" data-close>Schließen</button></div></dialog>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+<script src="app.js"></script>
+<script>
+/* Bilder: "src" später durch echten Pfad ersetzen, z.B. "img/hero.jpg" */
+const svg=(t,w,h)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#dfe9e7"/><text x="50%" y="50%" fill="#44585a" font-family="sans-serif" font-size="${w/26}" text-anchor="middle">${t} (${w}×${h})</text></svg>`);
+const IM=[["Pflegekraft im Gespräch mit Patientin",1200,900],["Hände halten",1170,780],["Pflege im Alltag",1170,780],["Hauswirtschaftliche Versorgung",1170,780],["Fahrzeug des Pflegedienstes",1170,878]].map(([t,w,h])=>({t,w,h,src:svg(t,w,h)}));
+const pic=i=>`<button class="imgb" data-g="${i}" aria-label="Bild vergrößern: ${esc(IM[i].t)}"><img src="${IM[i].src}" alt="${esc(IM[i].t)}" width="${IM[i].w}" height="${IM[i].h}"></button>`;
+$("#p0").innerHTML=pic(0);$("#pics").innerHTML=[1,2,3,4].map(pic).join("");
+/* Formulare */
+const FORM=()=>`<form class="f"><label>Name*<input name="name" required autocomplete="name"></label><label>E-Mail*<input name="email" type="email" required autocomplete="email"></label><label>Telefon (optional)<input name="phone" type="tel" autocomplete="tel"></label><label>Anliegen<input name="subject"></label><label>Nachricht*<textarea name="message" rows="5" required></textarea></label><label class="ck"><input type="checkbox" required>Ich habe die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen.</label><button class="btn">Nachricht senden</button><p class="st" role="status" aria-live="polite"></p></form>`;
+$("#fmain").innerHTML=FORM();$("#fdlg").innerHTML=FORM();
+document.addEventListener("submit",async e=>{const f=e.target.closest(".f");if(!f)return;e.preventDefault();const st=f.querySelector(".st");st.textContent="Wird gesendet …";
+try{await emailjs.send(EJS.svc,EJS.tpl,Object.fromEntries(new FormData(f)),{publicKey:EJS.pub});st.textContent="Danke! Ihre Nachricht wurde gesendet.";f.reset()}
+catch(x){st.textContent="Senden fehlgeschlagen. Bitte rufen Sie uns an: 09771 6877466."}});
+/* Leistungen */
+load("services").then(l=>{l=l.length?l:DEF;l.sort((a,b)=>(a.order??99)-(b.order??99));
+$("#svc").innerHTML=l.map(s=>`<article class="card"><h3>${esc(s.title)}</h3>${s.text?`<p>${esc(s.text)}</p>`:""}<div class="act"><a class="btn o" href="#kontakt" data-s="${esc(s.title)}">Kontakt</a><button class="btn" data-f="${esc(s.title)}">Formular</button></div></article>`).join("")}).catch(()=>{$("#svc").innerHTML="<p>Leistungen konnten nicht geladen werden.</p>"});
+/* Partner */
+$("#pt").innerHTML=[["bpa","https://www.bpa.de","Bundesverband privater Anbieter sozialer Dienste"],["Partner 2","#","Platzhalter"],["Partner 3","#","Platzhalter"]].map(([n,u,d])=>`<a class="card" href="${u}" ${u[0]=="h"?'target="_blank" rel="noopener"':""}><img src="${svg(n+"-Logo",480,240)}" alt="" width="480" height="240" style="width:100%;height:auto"><h3>${n}</h3><p>${d}</p></a>`).join("");
+/* Team (PLATZHALTER: Namen, Berufe, E-Mails und Fotos später ersetzen; Foto 400×400) */
+const TEAM=[["Mitarbeiter 1","Pflegedienstleitung"],["Mitarbeiter 2","Stellv. Pflegedienstleitung"],["Mitarbeiter 3","Altenpfleger/in"],["Mitarbeiter 4","Altenpfleger/in"],["Mitarbeiter 5","Krankenpfleger/in"],["Mitarbeiter 6","Krankenpfleger/in"],["Mitarbeiter 7","Pflegefachkraft"],["Mitarbeiter 8","Pflegefachkraft"],["Mitarbeiter 9","Pflegeassistent/in"],["Mitarbeiter 10","Pflegeassistent/in"],["Mitarbeiter 11","Hauswirtschaft"],["Mitarbeiter 12","Betreuungskraft"],["Mitarbeiter 13","Sekretariat"],["Mitarbeiter 14","Verwaltung"]];
+$("#tm").innerHTML=TEAM.map(([n,r],i)=>{const e=`mitarbeiter${i+1}@beispiel.de`;return `<article class="tm"><img src="${svg("Foto "+(i+1),400,400)}" alt="Foto von ${esc(n)}" width="400" height="400"><div><h3>${esc(n)}</h3><p>${esc(r)}</p><p><a href="mailto:${e}">${e}</a></p></div></article>`}).join("");
+/* Kalender */
+const MN="Januar Februar März April Mai Juni Juli August September Oktober November Dezember".split(" "),pad=n=>String(n).padStart(2,"0"),fd=k=>new Date(k+"T00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+let EV=[],now=new Date(),cy=now.getFullYear(),cm=now.getMonth(),sel="";const tk=`${cy}-${pad(cm+1)}-${pad(now.getDate())}`;
+/* >>> PLATZHALTER-TERMIN: zum Löschen nur den Eintrag in den eckigen Klammern entfernen, sodass "const DEMO=[];" übrig bleibt */
+const DEMO=[{date:tk,time:"10:00",title:"Beispieltermin (Platzhalter) – bitte löschen"}];
+/* <<< ENDE PLATZHALTER-TERMIN */
+function cal(){const off=(new Date(cy,cm,1).getDay()+6)%7,n=new Date(cy,cm+1,0).getDate();
+let h="MoDiMiDoFrSaSo".match(/../g).map(d=>`<b>${d}</b>`).join("")+"<span></span>".repeat(off);
+for(let d=1;d<=n;d++){const k=`${cy}-${pad(cm+1)}-${pad(d)}`,c=EV.filter(e=>e.date===k).length;h+=`<button class="day${c?" has":""}${k===tk?" today":""}" data-d="${k}" aria-pressed="${k===sel}" aria-label="${d}. ${MN[cm]}${c?`, ${c} Termin${c>1?"e":""}`:""}">${d}</button>`}
+$("#cg").innerHTML=h;$("#cm").textContent=`${MN[cm]} ${cy}`;
+const l=sel?EV.filter(e=>e.date===sel):EV.filter(e=>e.date>=tk).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,6);
+$("#ct").textContent=sel?fd(sel):"Nächste Termine";
+$("#cl").innerHTML=l.length?l.map(e=>`<li><strong>${esc(e.title)}</strong><br>${fd(e.date)}${e.time?`, ${esc(e.time)} Uhr`:""}</li>`).join(""):"<li>Keine Termine.</li>"}
+load("events").then(l=>{EV=l.concat(DEMO);cal()}).catch(cal);EV=DEMO.slice();cal();
+/* Klicks: Galerie, Overlay, Kalender */
+let gi=0;const G=$("#gal"),show=i=>{gi=(i+IM.length)%IM.length;$("#gi").src=IM[gi].src;$("#gi").alt=IM[gi].t;$("#gc").textContent=`${gi+1} / ${IM.length}`};
+const setS=(v,sel)=>document.querySelectorAll(sel+" [name=subject]").forEach(i=>i.value="Anfrage: "+v);
+document.addEventListener("click",e=>{const t=e.target.closest("[data-g],[data-f],[data-s],[data-d],[data-m],[data-n],[data-close]");if(!t)return;const d=t.dataset;
+if(d.g!=null){show(+d.g);G.showModal()}else if(d.f!=null){setS(d.f,"#dlg");$("#dlg").showModal()}else if(d.s!=null)setS(d.s,"#fmain")
+else if(d.d){sel=sel===d.d?"":d.d;cal()}else if(d.m){cm+=+d.m;if(cm<0){cm=11;cy--}if(cm>11){cm=0;cy++}cal()}
+else if(d.n)show(gi+ +d.n);else t.closest("dialog").close()});
+G.addEventListener("keydown",e=>{if(e.key=="ArrowRight")show(gi+1);if(e.key=="ArrowLeft")show(gi-1)});
+document.querySelectorAll("dialog").forEach(x=>x.addEventListener("click",e=>{if(e.target===x)x.close()}));
+</script></body></html>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Admin – Pflegedienst Saaletal</title><link rel="icon" href="logo.svg"><link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js")</script></head><body>
+<header><div class="wrap" style="flex-wrap:wrap"><a class="logo" href="index.html"><img src="logo.svg" alt="" width="48" height="48"><span>Pflegedienst Saaletal<small>Admin-Bereich</small></span></a><nav aria-label="Admin"><a href="index.html">Zur Website</a><button class="lnk" id="out" hidden>Abmelden</button></nav></div></header>
+
+<main class="wrap ad" style="padding-top:clamp(1.5rem,5vw,3rem);padding-bottom:clamp(3rem,8vw,5rem)">
+ <!-- Anmeldung über Firebase Authentication (E-Mail + Passwort) -->
+ <form id="login" class="f" style="max-width:26rem"><h1>Anmeldung</h1>
+  <label>E-Mail<input id="em" type="email" autocomplete="username" required></label>
+  <label>Passwort<input id="pw" type="password" autocomplete="current-password" required></label>
+  <button class="btn">Anmelden</button><p id="le" role="alert"></p></form>
+
+ <div id="panel" hidden>
+  <p id="warn" class="note" hidden><strong>Vorschau-Modus:</strong> Firebase ist noch nicht verbunden (siehe app.js und SETUP-ANLEITUNG.md). Änderungen können noch nicht gespeichert werden.</p>
+  <h1 style="font-size:clamp(1.6rem,4vw,2.4rem)">Inhalte der Website verwalten</h1>
+  <div class="tabs" role="tablist" id="tabs" aria-label="Bereiche"></div>
+  <div id="panels"></div>
+ </div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="app.js"></script>
+<script>
+/* ======================================================================
+   Aufbau des CMS: Jeder Bereich ("Block") ist entweder
+   - kind:"list" → Liste von Einträgen (Sammlung in Firestore), oder
+   - kind:"doc"  → ein einzelnes Dokument (Sammlung "settings").
+   Neue Felder lassen sich einfach in den Listen unten ergänzen.
+   ====================================================================== */
+const TODAY=iso(new Date());
+const f=(t,n,l,o={})=>({t,n,l,...o});
+const ICO=[["heart","Herz"],["cross","Medizinisches Kreuz"],["shield","Schutzschild"],["home","Haus"],["cart","Einkaufswagen"],["calendar","Kalender"],["chat","Gespräch"],["users","Menschen"]];
+const COLS=["#7cc430","#2f9e6b","#e8a31b","#e0583a","#3b82c4","#8a5bc8"];
+const dDesc=(a,b)=>(b.date||"").localeCompare(a.date||"")||(b.time||"").localeCompare(a.time||"");
+const DT={day:"numeric",month:"long",year:"numeric"};
+const TABS=[
+ {id:"home",label:"Startseite",blocks:[
+  {id:"welcome",kind:"doc",doc:"welcome",title:"Texte der Startseite",help:"Überschrift im Hero-Bild und der Text, der beim Scrollen erscheint.",fields:[
+   f("text","heroTitle","Große Überschrift im Hero-Bild",{req:1}),f("text","heroSub","Unterzeile im Hero-Bild"),f("text","title","Überschrift unter dem Hero-Bild"),
+   f("textarea","lead","Einleitung",{rows:3}),f("textarea","points","Stichpunkte (ein Punkt pro Zeile)",{rows:7}),f("textarea","closing","Schlusssatz",{rows:2})]},
+  {id:"hero",kind:"list",col:"hero",title:"Hero-Bilder (Karussell)",help:"Fotos der Mitarbeiter im Querformat (ca. 1600×900 px). Das Bild mit der kleinsten Reihenfolge-Nummer wird zuerst gezeigt. Empfohlen: 4 Bilder.",
+   fields:[f("image","image","Bild",{max:1600}),f("text","alt","Bildbeschreibung (für Screenreader)"),f("number","order","Reihenfolge",{def:1})],label:o=>o.alt||"Hero-Bild",meta:o=>"Reihenfolge "+(o.order??"–"),sort:byO},
+  {id:"gallery",kind:"list",col:"gallery",title:"Die 4 Bilder unter den Stichpunkten",help:"Querformat, ca. 1170×780 px. Die Bilder lassen sich auf der Website vergrößern.",
+   fields:[f("image","image","Bild",{max:1170}),f("text","alt","Bildbeschreibung / Titel"),f("number","order","Reihenfolge",{def:1})],label:o=>o.alt||"Bild",meta:o=>"Reihenfolge "+(o.order??"–"),sort:byO},
+  {id:"bg",kind:"doc",doc:"bg",title:"Hintergrundbild (hinter der ganzen Website)",help:"Das Bild bleibt beim Scrollen stehen. Es ist hinter den Bereichen Leistungen und Team sichtbar, hinter den weißen Bereichen verschwindet es.",fields:[f("image","image","Hintergrundbild",{max:1600})]}
+ ]},
+ {id:"svc",label:"Leistungen",blocks:[
+  {id:"services",kind:"list",col:"services",title:"Leistungen",help:"Einfache Überschrift, darunter klein die Zusatzinfo (z. B. „nach SGB XI“) und eine Kurzbeschreibung.",
+   fields:[f("text","title","Überschrift*",{req:1}),f("text","sub","Zusatzinfo (z. B. nach SGB XI)"),f("textarea","text","Kurzbeschreibung",{rows:3}),f("select","icon","Symbol",{opts:ICO}),f("number","order","Reihenfolge",{def:1})],label:o=>o.title,meta:o=>o.sub||"",sort:byO}
+ ]},
+ {id:"ev",label:"Termine",blocks:[
+  {id:"events",kind:"list",col:"events",title:"Termine",help:"Die Farbe bestimmt, wie der Termin im Kalender auf der Website angezeigt wird. Das Kopfbild erscheint in der Infokarte.",
+   fields:[f("date","date","Datum*",{req:1,def:TODAY}),f("time","time","Uhrzeit (optional)"),f("text","title","Titel*",{req:1}),f("textarea","text","Beschreibung",{rows:4}),f("image","image","Kopfbild (ca. 1200×600 px)",{max:1200}),f("color","color","Farbe im Kalender",{def:"#7cc430"})],
+   label:o=>o.title,meta:o=>fd(o.date,DT)+(o.time?`, ${o.time} Uhr`:""),sort:dDesc}
+ ]},
+ {id:"nw",label:"Neuigkeiten",blocks:[
+  {id:"news",kind:"list",col:"news",title:"Neuigkeiten (Newsfeed)",help:"Die neuesten drei erscheinen auf der Startseite, alle auf newsfeed.html.",
+   fields:[f("date","date","Datum*",{req:1,def:TODAY}),f("text","title","Überschrift*",{req:1}),f("textarea","text","Text",{rows:6}),f("image","image","Bild (optional)",{max:900})],label:o=>o.title,meta:o=>o.date?fd(o.date,DT):"",sort:dDesc}
+ ]},
+ {id:"tm",label:"Team",blocks:[
+  {id:"team",kind:"list",col:"team",title:"Mitarbeiter",help:"Ohne Foto wird automatisch eine graue Silhouette gezeigt. Fotos quadratisch (ca. 400×400 px).",
+   fields:[f("text","name","Name*",{req:1}),f("text","role","Beruf / Funktion"),f("email","email","E-Mail"),f("image","photo","Foto",{max:500}),f("number","order","Reihenfolge",{def:1})],label:o=>o.name,meta:o=>o.role||"",sort:byO}
+ ]},
+ {id:"pt",label:"Partner",blocks:[
+  {id:"partners",kind:"list",col:"partners",title:"Partner",help:"Logos ca. 480×240 px (PNG mit transparentem Hintergrund bleibt erhalten).",
+   fields:[f("text","name","Name*",{req:1}),f("text","url","Webadresse (https://…)"),f("text","text","Kurzbeschreibung"),f("image","logo","Logo",{max:600,png:1}),f("number","order","Reihenfolge",{def:1})],label:o=>o.name,meta:o=>o.text||"",sort:byO}
+ ]},
+ {id:"rv",label:"Rezensionen",blocks:[
+  {id:"site",kind:"doc",doc:"site",title:"Bewertungsleiste auf der Startseite",help:"Die Leiste unter der Kopfzeile ist versteckt, solange es keine Rezensionen gibt. Hier lässt sie sich zusätzlich ausschalten.",fields:[f("check","showReviews","Bewertungsleiste auf der Startseite anzeigen")]},
+  {id:"reviews",kind:"list",col:"reviews",noForm:1,title:"Rezensionen von Besuchern",help:"Besucher schreiben Rezensionen auf rezensionen.html. Hier können unpassende Rezensionen gelöscht werden.",
+   label:o=>`${o.name} – ${o.stars} von 5 Sternen`,meta:o=>o.text,sort:(a,b)=>ms(b)-ms(a)}
+ ]},
+ {id:"ct",label:"Kontakt",blocks:[
+  {id:"contact",kind:"doc",doc:"contact",title:"Kontaktdaten",help:"Erscheinen im Kontaktbereich, in der Notruf-Leiste und im Footer.",
+   fields:[f("text","notruf","24 Std. Notruf"),f("text","mobil","Mobil"),f("text","festnetz","Festnetz"),f("text","fax","Fax"),f("email","email","E-Mail"),f("text","street","Straße und Hausnummer"),f("text","city","PLZ und Ort")]}
+ ]}
+];
+const BL={};TABS.forEach(t=>t.blocks.forEach(b=>BL[b.id]=b));
+const ITEMS={};
+
+/* ---------- Formularfelder ---------- */
+function fh(f){const n=esc(f.n),l=esc(f.l);
+ if(f.t==="textarea")return`<label>${l}<textarea name="${n}" rows="${f.rows||3}"></textarea></label>`;
+ if(f.t==="select")return`<label>${l}<select name="${n}">${f.opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>`;
+ if(f.t==="check")return`<label class="ck"><input type="checkbox" name="${n}"><span>${l}</span></label>`;
+ if(f.t==="color")return`<div class="imgf"><span class="lbl">${l}</span><div class="colr"><input type="color" name="${n}" aria-label="${l}">${COLS.map(c=>`<button type="button" data-col="${c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join("")}</div></div>`;
+ if(f.t==="image")return`<div class="imgf" data-img="${n}" data-max="${f.max||900}"${f.png?" data-png":""}><span class="lbl">${l}</span><div class="imgrow"><img class="prev" alt="" hidden><div class="ctl"><input type="hidden" name="${n}"><input type="text" class="url" aria-label="${l} (Adresse)"><div class="row"><label class="btn o s upl" style="display:inline-flex;margin:0">Bild hochladen<input type="file" accept="image/*" hidden></label><button type="button" class="btn o s" data-rm>Entfernen</button></div></div></div></div>`;
+ return`<label>${l}<input name="${n}" type="${f.t}"${f.req?" required":""}></label>`;
+}
+function bh(b){
+ const seed=DB&&SEEDABLE.includes(b.col)?`<button class="btn o" data-seed="${b.id}" hidden>Standardinhalte als Einträge anlegen</button>`:"";
+ return`<section class="blk"><h2>${b.title}</h2>${b.help?`<p class="help">${b.help}</p>`:""}
+ ${b.noForm?"":`<form class="f ef" data-b="${b.id}">${b.kind==="list"?'<input type="hidden" name="id">':""}${b.fields.map(fh).join("")}<div class="row"><button class="btn">Speichern</button>${b.kind==="list"?'<button type="reset" class="btn o">Neuer Eintrag</button>':""}</div></form>`}
+ ${b.kind==="list"?`<ul class="items" id="l-${b.id}"></ul>${seed}`:""}</section>`;
+}
+function build(){
+ $("#tabs").innerHTML=TABS.map((t,i)=>`<button role="tab" data-t="${t.id}" aria-selected="${!i}">${t.label}</button>`).join("");
+ $("#panels").innerHTML=TABS.map((t,i)=>`<div role="tabpanel" id="p-${t.id}"${i?" hidden":""}>${t.blocks.map(bh).join("")}</div>`).join("");
+ Object.values(BL).forEach(b=>{const fm=$(`form[data-b="${b.id}"]`);if(fm)setVals(fm,b,{})});
+}
+const tab=id=>{$$("[role=tab]").forEach(x=>x.setAttribute("aria-selected",x.dataset.t===id));$$("[role=tabpanel]").forEach(p=>p.hidden=p.id!=="p-"+id)};
+
+/* ---------- Werte setzen / lesen ---------- */
+function img(w,v){const h=w.querySelector("[type=hidden]"),u=w.querySelector(".url"),p=w.querySelector(".prev"),up=(v||"").startsWith("data:");
+ h.value=v||"";u.value=v&&!up?v:"";u.placeholder=up?"(Bild ist hochgeladen)":"Bild-Adresse (URL) oder Pfad – oder hochladen";p.hidden=!v;if(v)p.src=v}
+function setVals(fm,b,o){
+ if(fm.elements.id)fm.elements.id.value=o.id||"";
+ b.fields.forEach(f=>{const el=fm.elements[f.n],v=o[f.n]??(typeof f.def==="function"?f.def():f.def)??"";
+  if(f.t==="check"){el.checked=o[f.n]??true;return}
+  if(f.t==="image"){img(fm.querySelector(`[data-img="${f.n}"]`),v);return}
+  if(f.t==="select"){el.value=v||f.opts[0][0];return}
+  el.value=v});
+}
+function readVals(fm,b){
+ const d={};b.fields.forEach(f=>{const el=fm.elements[f.n];d[f.n]=f.t==="check"?el.checked:f.t==="number"?(+el.value||0):(el.value||"").trim()});
+ if(fm.elements.id&&fm.elements.id.value)d.id=fm.elements.id.value;return d;
+}
+
+/* ---------- Listen ---------- */
+function li(b,o){
+ const im=b.fields&&b.fields.find(x=>x.t==="image"),th=im&&o[im.n]?`<img src="${esc(o[im.n])}" alt="">`:"";
+ return`<li>${th}<span class="t">${esc(b.label(o))}<small>${esc(b.meta?b.meta(o):"")}</small></span>${b.noForm?"":`<button class="btn o s" data-edit="${b.id}" data-id="${esc(o.id)}">Bearbeiten</button>`}<button class="btn o s" data-del="${b.id}" data-id="${esc(o.id)}">Löschen</button></li>`;
+}
+async function refresh(b){
+ try{
+  if(b.kind==="list"){
+   const l=(await load(b.col)).sort(b.sort||byO);ITEMS[b.id]=l;
+   $("#l-"+b.id).innerHTML=l.map(o=>li(b,o)).join("")||"<li>Noch keine Einträge.</li>";
+   const s=$(`[data-seed="${b.id}"]`);if(s)s.hidden=l.length>0;
+  }else{
+   const o={...(DEF[b.doc]||{}),...((await getDoc("settings",b.doc))||{})};setVals($(`form[data-b="${b.id}"]`),b,o);
+  }
+ }catch(e){toast(errMsg(e),1)}
+}
+
+/* ---------- Bild verkleinern (wird direkt in Firestore gespeichert, kein Storage nötig) ---------- */
+function shrink(file,max,png){return new Promise((ok,no)=>{
+ const r=new FileReader();r.onerror=no;
+ r.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("Datei ist kein Bild"));
+  im.onload=()=>{const k=Math.min(1,max/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+   const x=c.getContext("2d");if(!png){x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height)}x.drawImage(im,0,0,c.width,c.height);
+   let u=png?c.toDataURL("image/png"):"";
+   if(!u||u.length>850000){let q=.85;do{u=c.toDataURL("image/jpeg",q);q-=.1}while(u.length>850000&&q>.35)}
+   u.length>900000?no(new Error("Bild ist zu groß, bitte ein kleineres Bild wählen")):ok(u)};
+  im.src=r.result};
+ r.readAsDataURL(file)})}
+
+/* ---------- Meldungen ---------- */
+let tt;function toast(m,err){const t=$("#toast");t.textContent=m;t.className="on"+(err?" err":"");clearTimeout(tt);tt=setTimeout(()=>t.className="",4200)}
+const errMsg=e=>e.code==="permission-denied"?"Keine Berechtigung: bitte mit dem Admin-Konto anmelden und die Firestore-Regeln prüfen.":(e.message||"Unbekannter Fehler");
+
+/* ---------- Ereignisse ---------- */
+document.addEventListener("submit",async e=>{
+ const fm=e.target.closest(".ef");if(!fm)return;e.preventDefault();
+ if(!DB)return toast("Firebase ist noch nicht verbunden (siehe app.js).",1);
+ const b=BL[fm.dataset.b],d=readVals(fm,b);
+ try{if(b.kind==="doc")await setDoc("settings",b.doc,d);else{await save(b.col,d);fm.reset()}toast("Gespeichert ✓");refresh(b)}catch(x){toast(errMsg(x),1)}
+});
+document.addEventListener("reset",e=>{const fm=e.target.closest(".ef");if(fm)setTimeout(()=>setVals(fm,BL[fm.dataset.b],{}))});
+document.addEventListener("click",async e=>{
+ const t=e.target.closest("[data-edit],[data-del],[data-seed],[data-col],[data-rm],[role=tab],#out");if(!t)return;
+ if(t.matches("[role=tab]"))return tab(t.dataset.t);
+ if(t.id==="out")return AUTH.signOut();
+ if(t.dataset.col)return void(t.closest(".colr").querySelector("input").value=t.dataset.col);
+ if(t.hasAttribute("data-rm"))return img(t.closest("[data-img]"),"");
+ try{
+  if(t.dataset.edit){const b=BL[t.dataset.edit],o=ITEMS[b.id].find(x=>x.id===t.dataset.id),fm=$(`form[data-b="${b.id}"]`);setVals(fm,b,o);fm.scrollIntoView({behavior:"smooth",block:"center"});toast("Eintrag geladen – nach den Änderungen auf „Speichern“ klicken.")}
+  else if(t.dataset.del){const b=BL[t.dataset.del];if(confirm("Eintrag wirklich löschen?")){await del(b.col,t.dataset.id);toast("Gelöscht ✓");refresh(b)}}
+  else if(t.dataset.seed){const b=BL[t.dataset.seed];await Promise.all(DEF[b.col].map(o=>save(b.col,o)));toast("Standardinhalte angelegt ✓");refresh(b)}
+ }catch(x){toast(errMsg(x),1)}
+});
+document.addEventListener("change",async e=>{
+ const fi=e.target.closest(".imgf input[type=file]");if(!fi||!fi.files[0])return;const w=fi.closest("[data-img]");
+ try{toast("Bild wird verkleinert …");img(w,await shrink(fi.files[0],+w.dataset.max,w.hasAttribute("data-png")));toast("Bild bereit – jetzt unten auf „Speichern“ klicken.")}
+ catch(x){toast("Bild konnte nicht verarbeitet werden: "+x.message,1)}fi.value="";
+});
+document.addEventListener("input",e=>{
+ const u=e.target.closest(".imgf .url");if(!u)return;const w=u.closest("[data-img]"),p=w.querySelector(".prev");
+ w.querySelector("[type=hidden]").value=u.value.trim();p.hidden=!u.value.trim();p.src=u.value.trim();
+});
+
+/* ---------- Anmeldung ---------- */
+let built=false;
+function ui(user){
+ const adm=!DB||!!user;
+ $("#login").hidden=adm;$("#panel").hidden=!adm;$("#out").hidden=!(DB&&user);$("#warn").hidden=!!DB;
+ if(adm){if(!built){built=true;build()}Object.values(BL).forEach(refresh)}
+}
+$("#login").onsubmit=async e=>{
+ e.preventDefault();$("#le").textContent="";
+ try{await AUTH.signInWithEmailAndPassword($("#em").value.trim(),$("#pw").value)}
+ catch(x){$("#le").textContent="Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen."}
+};
+if(AUTH)AUTH.onAuthStateChanged(ui);else ui(null);
+</script></body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neuigkeiten – Pflegedienst Saaletal</title>
+<meta name="description" content="Aktuelles aus dem Pflegeteam Saaletal in Bad Neustadt.">
+<link rel="icon" href="logo.svg"><link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js")</script></head><body>
+<div class="sos"><div class="wrap">24 Std. Notruf:&nbsp;<a data-ct="notruf" href="tel:+4915165489018">0151-65 48 90 18</a></div></div>
+<header><div class="wrap"><a class="logo" href="index.html"><img src="logo.svg" alt="" width="48" height="48"><span>Pflegedienst Saaletal<small>Zur Startseite</small></span></a>
+<button class="burger" aria-expanded="false" aria-controls="mnav" aria-label="Menü öffnen"><span></span><span></span><span></span></button>
+<nav id="mnav" class="mnav" aria-label="Hauptmenü"><a href="index.html#willkommen">Willkommen</a><a href="index.html#leistungen">Leistungen</a><a href="index.html#termine">Termine</a><a href="index.html#team">Team</a><a href="index.html#partner">Partner</a><a href="index.html#kontakt">Kontakt</a></nav></div></header>
+
+<main class="wrap page">
+ <h1 class="rv"><span class="hl">Neuigkeiten aus dem Pflegeteam</span></h1>
+ <p class="lead">Aktuelles und Wissenswertes rund um unseren Pflegedienst.</p>
+ <div class="sheet" id="nf"></div>
+ <p style="margin-top:2rem"><a class="btn o" href="index.html">Zurück zur Startseite</a></p>
+</main>
+
+<footer><div class="wrap foot">
+ <div><p>24 Std. Notruf: <a data-ct="notruf" href="tel:+4915165489018">0151-65 48 90 18</a></p><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><p style="margin-top:.8rem">© Pflegedienst Saaletal</p></div>
+ <div class="foot-r"><p>Wie war Ihre Erfahrung mit uns?</p><a class="btn o s" href="rezensionen.html">Rezensionen lesen &amp; schreiben</a></div>
+</div></footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+<script>
+initNav();reveal();initCommon();
+col("news",{by:"date",dir:"desc",n:50}).then(l=>{
+ l.sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+ /* BILD ERSETZEN: Bilder der Neuigkeiten (optional) werden im Admin-Bereich unter "Neuigkeiten" hochgeladen. */
+ $("#nf").innerHTML=l.map(n=>`<article class="nitem rv${n.image?"":" noimg"}">${n.image?`<img src="${esc(n.image)}" alt="" loading="lazy">`:""}<div>${n.date?`<span class="nd">${fd(n.date,{day:"numeric",month:"long",year:"numeric"})}</span>`:""}<h2>${esc(n.title)}</h2><p class="pre">${esc(n.text)}</p></div></article>`).join("")||"<p>Noch keine Neuigkeiten. Schauen Sie bald wieder vorbei!</p>";
+ reveal($("#nf"));
+});
+</script></body></html>

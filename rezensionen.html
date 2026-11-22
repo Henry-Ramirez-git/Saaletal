@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rezensionen – Pflegedienst Saaletal</title>
+<meta name="description" content="Bewertungen und Rezensionen zum Pflegedienst Saaletal in Bad Neustadt. Schreiben Sie uns Ihre Erfahrung.">
+<link rel="icon" href="logo.svg"><link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js")</script></head><body>
+<div class="sos"><div class="wrap">24 Std. Notruf:&nbsp;<a data-ct="notruf" href="tel:+4915165489018">0151-65 48 90 18</a></div></div>
+<header><div class="wrap"><a class="logo" href="index.html"><img src="logo.svg" alt="" width="48" height="48"><span>Pflegedienst Saaletal<small>Zur Startseite</small></span></a>
+<button class="burger" aria-expanded="false" aria-controls="mnav" aria-label="Menü öffnen"><span></span><span></span><span></span></button>
+<nav id="mnav" class="mnav" aria-label="Hauptmenü"><a href="index.html#willkommen">Willkommen</a><a href="index.html#leistungen">Leistungen</a><a href="index.html#termine">Termine</a><a href="index.html#team">Team</a><a href="index.html#partner">Partner</a><a href="index.html#kontakt">Kontakt</a></nav></div></header>
+
+<main class="wrap page">
+ <h1 class="rv"><span class="hl">Ihre Meinung zählt</span></h1>
+ <p class="lead">Wie haben Sie unseren Pflegedienst erlebt? Ihre Rezension hilft anderen Familien bei der Entscheidung – und uns, noch besser zu werden.</p>
+
+ <div class="two">
+  <div class="sheet">
+   <h2 style="font-size:1.5rem">Rezension schreiben</h2>
+   <form class="f" id="rf">
+    <fieldset class="rate"><legend>Ihre Bewertung*</legend>
+     <div class="rin">
+      <input type="radio" name="stars" id="s5" value="5" required><label for="s5"><span class="sr">5 Sterne</span>★</label>
+      <input type="radio" name="stars" id="s4" value="4"><label for="s4"><span class="sr">4 Sterne</span>★</label>
+      <input type="radio" name="stars" id="s3" value="3"><label for="s3"><span class="sr">3 Sterne</span>★</label>
+      <input type="radio" name="stars" id="s2" value="2"><label for="s2"><span class="sr">2 Sterne</span>★</label>
+      <input type="radio" name="stars" id="s1" value="1"><label for="s1"><span class="sr">1 Stern</span>★</label>
+     </div>
+    </fieldset>
+    <label>Ihr Name* (wird veröffentlicht, z. B. „Familie M.“)<input name="name" required maxlength="60" autocomplete="name"></label>
+    <label>Ihre Rezension*<textarea name="text" rows="5" required maxlength="600"></textarea></label>
+    <div class="sr" aria-hidden="true"><label>Bitte leer lassen<input name="website" tabindex="-1" autocomplete="off"></label></div>
+    <label class="ck"><input type="checkbox" required><span>Ich bin damit einverstanden, dass meine Rezension mit meinem Namen veröffentlicht wird. Hinweise finden Sie in der <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a>.</span></label>
+    <button class="btn">Rezension absenden</button>
+    <p class="st" id="rs" role="status" aria-live="polite"></p>
+   </form>
+  </div>
+  <div class="sheet">
+   <h2 style="font-size:1.5rem">Das sagen andere</h2>
+   <div class="rsum" id="sum"></div>
+   <p class="empty">Bitte senden Sie keine Gesundheitsdaten über dieses Formular.</p>
+  </div>
+ </div>
+ <div class="rcards" id="rl"></div>
+</main>
+
+<footer><div class="wrap foot">
+ <div><p>24 Std. Notruf: <a data-ct="notruf" href="tel:+4915165489018">0151-65 48 90 18</a></p><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><p style="margin-top:.8rem">© Pflegedienst Saaletal</p></div>
+ <div class="foot-r"><p>Wie war Ihre Erfahrung mit uns?</p><a class="btn o s" href="rezensionen.html">Rezensionen lesen &amp; schreiben</a></div>
+</div></footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+<script>
+initNav();reveal();initCommon();
+
+/* Liste + Durchschnitt laden (Besucher sehen alle Rezensionen, Löschen nur im Admin-Bereich) */
+async function list(){
+ const l=(await col("reviews",{by:"createdAt",dir:"desc",n:100})).sort((a,b)=>ms(b)-ms(a));
+ const avg=l.length?l.reduce((s,r)=>s+r.stars,0)/l.length:0;
+ $("#sum").innerHTML=l.length?`<strong>${avg.toFixed(1).replace(".",",")}</strong><div>${stars(Math.round(avg))}<br><small>${l.length} Bewertung${l.length>1?"en":""}</small></div>`:"<p class=\"empty\">Noch keine Rezensionen. Schreiben Sie die erste!</p>";
+ $("#rl").innerHTML=l.map(r=>`<article class="rc rv">${stars(r.stars)}<p>„${esc(r.text)}“</p><small><strong>${esc(r.name)}</strong>${ms(r)>1e9?" · "+new Date(ms(r)).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"}):""}</small></article>`).join("");
+ reveal($("#rl"));
+}
+list();
+
+/* Rezension speichern */
+$("#rf").onsubmit=async e=>{
+ e.preventDefault();const f=e.target,st=$("#rs");
+ if(f.website.value)return;                                        // Spam-Schutz (Honeypot)
+ const n=+f.stars.value;if(!n){st.textContent="Bitte wählen Sie eine Sternebewertung.";return}
+ if(!DB){st.textContent="Die Rezensions-Funktion ist noch nicht mit Firebase verbunden (siehe app.js).";return}
+ let last=0;try{last=+localStorage.getItem("rv_last")||0}catch(x){}
+ if(Date.now()-last<600000){st.textContent="Vielen Dank! Bitte warten Sie einige Minuten, bevor Sie eine weitere Rezension senden.";return}
+ st.textContent="Wird gesendet …";
+ try{ /* >>> FIREBASE: Sammlung "reviews" – Regeln siehe SETUP-ANLEITUNG.md */
+  await DB.collection("reviews").add({name:f.name.value.trim().slice(0,60),stars:n,text:f.text.value.trim().slice(0,600),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  try{localStorage.setItem("rv_last",Date.now())}catch(x){}
+  f.reset();st.textContent="Vielen Dank! Ihre Rezension wurde veröffentlicht.";list();
+ }catch(x){st.textContent="Senden fehlgeschlagen. Bitte versuchen Sie es später erneut."}
+};
+</script></body></html>

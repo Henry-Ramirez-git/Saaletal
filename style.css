@@ -32,7 +32,7 @@
   /* >>> HINTERGRUNDBILD: Platzhalter (leicht graues Weiß).
      BILD ERSETZEN: z. B. --bg-img:url("img/hintergrund.jpg");
      (oder im Admin-Bereich hochladen, dann überschreibt das Bild diesen Wert) */
-  --bg-img:radial-gradient(ellipse at 15% 10%,#fafaf7 0,transparent 55%),radial-gradient(ellipse at 90% 85%,#e4e7de 0,transparent 55%),linear-gradient(160deg,#f1f2ee,#e7e9e2);
+  --bg-img:url("backround-saaletal.png");
 }
 
 *{box-sizing:border-box}
